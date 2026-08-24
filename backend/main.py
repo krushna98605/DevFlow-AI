@@ -1,16 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from database import get_db
+from models import Project as ProjectModel
 
 app = FastAPI(title="DevFlow AI API")
 
 
-class Project(BaseModel):
+class ProjectCreate(BaseModel):
     name: str
     repository: str
-
-
-projects = []
-next_project_id = 1
 
 
 @app.get("/health")
@@ -22,54 +22,89 @@ def health_check():
 
 
 @app.post("/projects")
-def create_project(project: Project):
-    global next_project_id
+def create_project(
+    project: ProjectCreate,
+    db: Session = Depends(get_db)
+):
+    new_project = ProjectModel(
+        name=project.name,
+        repository=project.repository
+    )
 
-    new_project = {
-        "id": next_project_id,
-        "name": project.name,
-        "repository": project.repository
-    }
-
-    projects.append(new_project)
-    next_project_id += 1
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
 
     return {
         "message": "Project created successfully",
-        "project": new_project
+        "project": {
+            "id": new_project.id,
+            "name": new_project.name,
+            "repository": new_project.repository
+        }
     }
 
 
 @app.get("/projects")
-def get_projects():
+def get_projects(db: Session = Depends(get_db)):
+    projects = db.query(ProjectModel).all()
+
     return {
-        "projects": projects
+        "projects": [
+            {
+                "id": project.id,
+                "name": project.name,
+                "repository": project.repository
+            }
+            for project in projects
+        ]
     }
 
 
 @app.get("/projects/{project_id}")
-def get_project(project_id: int):
-    for project in projects:
-        if project["id"] == project_id:
-            return project
-
-    raise HTTPException(
-        status_code=404,
-        detail="Project not found"
+def get_project(
+    project_id: int,
+    db: Session = Depends(get_db)
+):
+    project = (
+        db.query(ProjectModel)
+        .filter(ProjectModel.id == project_id)
+        .first()
     )
+
+    if project is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+    return {
+        "id": project.id,
+        "name": project.name,
+        "repository": project.repository
+    }
 
 
 @app.delete("/projects/{project_id}")
-def delete_project(project_id: int):
-    for project in projects:
-        if project["id"] == project_id:
-            projects.remove(project)
-
-            return {
-                "message": "Project deleted successfully"
-            }
-
-    raise HTTPException(
-        status_code=404,
-        detail="Project not found"
+def delete_project(
+    project_id: int,
+    db: Session = Depends(get_db)
+):
+    project = (
+        db.query(ProjectModel)
+        .filter(ProjectModel.id == project_id)
+        .first()
     )
+
+    if project is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+    db.delete(project)
+    db.commit()
+
+    return {
+        "message": "Project deleted successfully"
+    }

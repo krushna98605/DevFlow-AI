@@ -20,12 +20,12 @@ class RepositoryService:
         )
 
         # Step 2: Analyze repository
-        project_type = self.analyzer.detect_project_type(
+        project_types = self.analyzer.detect_project_types(
             repository_path
         )
 
         return {
             "repository_url": repository_url,
             "repository_path": repository_path,
-            "project_type": project_type
+            "project_types": project_types
         }

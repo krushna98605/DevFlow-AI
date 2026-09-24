@@ -3,27 +3,27 @@ from pathlib import Path
 
 class RepositoryAnalyzer:
 
-    def detect_project_type(self, repository_path: str):
+    def detect_project_types(self, repository_path: str):
         path = Path(repository_path)
 
-        # Python
+        project_types = []
+
         if list(path.rglob("requirements.txt")):
-            return "Python"
+            project_types.append("Python")
 
-        # Node.js
         if list(path.rglob("package.json")):
-            return "Node.js"
+            project_types.append("Node.js")
 
-        # Java Maven
         if list(path.rglob("pom.xml")):
-            return "Java (Maven)"
+            project_types.append("Java (Maven)")
 
-        # Java Gradle
         if list(path.rglob("build.gradle")):
-            return "Java (Gradle)"
+            project_types.append("Java (Gradle)")
 
-        # Docker
         if list(path.rglob("Dockerfile")):
-            return "Docker"
+            project_types.append("Docker")
 
-        return "Unknown"
+        if not project_types:
+            project_types.append("Unknown")
+
+        return project_types

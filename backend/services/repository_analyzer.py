@@ -6,19 +6,24 @@ class RepositoryAnalyzer:
     def detect_project_type(self, repository_path: str):
         path = Path(repository_path)
 
-        if (path / "requirements.txt").exists():
+        # Python
+        if list(path.rglob("requirements.txt")):
             return "Python"
 
-        if (path / "package.json").exists():
+        # Node.js
+        if list(path.rglob("package.json")):
             return "Node.js"
 
-        if (path / "pom.xml").exists():
+        # Java Maven
+        if list(path.rglob("pom.xml")):
             return "Java (Maven)"
 
-        if (path / "build.gradle").exists():
+        # Java Gradle
+        if list(path.rglob("build.gradle")):
             return "Java (Gradle)"
 
-        if (path / "Dockerfile").exists():
+        # Docker
+        if list(path.rglob("Dockerfile")):
             return "Docker"
 
         return "Unknown"

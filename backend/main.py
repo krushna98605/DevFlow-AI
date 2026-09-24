@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from routers.projects import router as projects_router
+from routers.repository import router as repository_router
 from routers.github import router as github_router
 
 
@@ -21,3 +22,4 @@ def health_check():
 
 app.include_router(projects_router)
 app.include_router(github_router)
+app.include_router(repository_router)

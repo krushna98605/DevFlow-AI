@@ -1,5 +1,6 @@
 from services.repository_cloner import RepositoryCloner
 from services.repository_analyzer import RepositoryAnalyzer
+from services.pipeline_generator import PipelineGenerator
 
 
 class RepositoryService:
@@ -7,6 +8,7 @@ class RepositoryService:
     def __init__(self):
         self.cloner = RepositoryCloner()
         self.analyzer = RepositoryAnalyzer()
+        self.pipeline_generator = PipelineGenerator()
 
     def clone_and_analyze(
         self,
@@ -24,8 +26,14 @@ class RepositoryService:
             repository_path
         )
 
+        # Step 3: Generate CI/CD pipeline
+        pipeline = self.pipeline_generator.generate(
+            project_types
+        )
+
         return {
             "repository_url": repository_url,
             "repository_path": repository_path,
-            "project_types": project_types
+            "project_types": project_types,
+            "pipeline": pipeline
         }

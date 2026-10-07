@@ -13,7 +13,7 @@ class PipelineGenerator:
                 """      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"" """
+          python-version: "3.12" """
             )
 
             steps.append(
